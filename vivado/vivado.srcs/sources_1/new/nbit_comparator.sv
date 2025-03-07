@@ -18,13 +18,13 @@ module nbit_comparator
 
     generate
         if (SIGNED_MODE) begin : signed_comparator
-            assign eq = ($signed(A) == $signed(B));
-            assign lt = ($signed(A) <  $signed(B));
-            assign gt = ($signed(A) >  $signed(B));
+            assign eq = (signed'(A) == signed'(B));
+            assign lt = (signed'(A) <  signed'(B));
+            assign gt = (signed'(A) >  signed'(B));
         end else begin : unsigned_comparator
             assign eq = (A == B);
-            assign lt = (A < B);
-            assign gt = (A > B);
+            assign lt = (A <  B);
+            assign gt = (A >  B);
         end
     endgenerate
 
