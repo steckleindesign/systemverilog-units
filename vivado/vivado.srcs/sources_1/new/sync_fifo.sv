@@ -24,7 +24,7 @@ module sync_fifo
     logic [WIDTH-1:0] fifo_data[0:DEPTH-1];
     logic [$clog2(DEPTH)-1:0] wr_addr, rd_addr;
     
-    logic [$clog2(DEPTH)-1:0] addr_diff;
+    logic [$clog2(DEPTH):0] addr_diff;
     logic i_fifo_full, i_fifo_almost_full, i_fifo_empty, i_fifo_almost_empty;
     
     always_ff @(posedge clk)
@@ -32,6 +32,7 @@ module sync_fifo
         addr_diff <= 0;
         wr_addr   <= 0;
         rd_addr   <= 0;
+        dout      <= 0; // Needed?
     end else begin
         if (wr_en && ~i_fifo_full)
         begin
@@ -40,6 +41,7 @@ module sync_fifo
         end
         if (rd_en && ~fifo_empty)
         begin
+            dout    <= fifo_data[rd_addr];
             rd_addr <= rd_addr + 1;
         end
         
@@ -61,6 +63,4 @@ module sync_fifo
         fifo_almost_empty   = i_fifo_almost_empty;
     end
     
-    assign dout = fifo_data[rd_addr];
-
 endmodule
