@@ -22,18 +22,18 @@ module burst_fifo_nx #(
     logic [WIDTH-1:0] fifo_mem [0:DEPTH-1];
     
     // Cross clock domains with pointers gray encoded
-    logic [$clog2(DEPTH)-1:0] wr_ptr_bin, rd_ptr_bin;
-    logic [$clog2(DEPTH)-1:0] rd_ptr_gray, wr_ptr_gray;
-    logic [$clog2(DEPTH)-1:0] rd_ptr_wrclk, rd_ptr_wrclk1, rd_ptr_wrclk2;
-    logic [$clog2(DEPTH)-1:0] wr_ptr_rdclk, wr_ptr_rdclk1, wr_ptr_rdclk2;
+    logic [$clog2(DEPTH):0] wr_ptr_bin, rd_ptr_bin;
+    logic [$clog2(DEPTH):0] rd_ptr_gray, wr_ptr_gray;
+    logic [$clog2(DEPTH):0] rd_ptr_wrclk, rd_ptr_wrclk1, rd_ptr_wrclk2;
+    logic [$clog2(DEPTH):0] wr_ptr_rdclk, wr_ptr_rdclk1, wr_ptr_rdclk2;
     
-    function automatic logic [$clog2(DEPTH)-1:0] bin2gray(input logic [$clog2(DEPTH)-1:0] bin);
+    function automatic logic [$clog2(DEPTH):0] bin2gray(input logic [$clog2(DEPTH):0] bin);
         return bin ^ (bin >> 1);
     endfunction
     
     // Practice coding this in different ways
-    function automatic logic [$clog2(DEPTH)-1:0] gray2bin(input logic [$clog2(DEPTH)-1:0] gray);
-        logic [$clog2(DEPTH)-1:0] bin;
+    function automatic logic [$clog2(DEPTH):0] gray2bin(input logic [$clog2(DEPTH):0] gray);
+        logic [$clog2(DEPTH):0] bin;
         for (int i = $clog2(DEPTH); i >= 0; i--)
             bin[i] = ^(gray >> i);
         return bin;
@@ -57,8 +57,8 @@ module burst_fifo_nx #(
     end
     
     always_ff @(wr_clk) begin
-        fifo_full        <=  wr_ptr_bin    == rd_ptr_wrclk;
-        fifo_almost_full <= (wr_ptr_bin+1) == rd_ptr_wrclk;
+        fifo_full        <=  wr_ptr_bin    == {~rd_ptr_wrclk[$clog2(DEPTH)], rd_ptr_wrclk[$clog2(DEPTH)-1:0]};
+        fifo_almost_full <= (wr_ptr_bin+1) == {~rd_ptr_wrclk[$clog2(DEPTH)], rd_ptr_wrclk[$clog2(DEPTH)-1:0]};;
     end
     
     generate

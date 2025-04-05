@@ -87,6 +87,6 @@ module async_fifo #(
     assign rd_ptr_gray_wrclk = gray2bin(rd_ptr_gray_wrclk_sync2);
 
     assign empty = (rd_ptr_gray == wr_ptr_gray_rdclk);
-    assign full  = (wr_ptr_gray == {~rd_ptr_gray_wrclk[ADDR_WIDTH:ADDR_WIDTH-1], rd_ptr_gray_wrclk[ADDR_WIDTH-2:0]});
+    assign full  = (wr_ptr_gray == {~rd_ptr_gray_wrclk[ADDR_WIDTH], rd_ptr_gray_wrclk[ADDR_WIDTH-1:0]});
 
 endmodule
