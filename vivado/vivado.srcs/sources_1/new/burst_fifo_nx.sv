@@ -3,11 +3,13 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
+import clk_spec_param_pkg ::*;
+
 module burst_fifo_nx #(
-    parameter string FASTER_CLK = "wr", // (wr, rd)
-    parameter CLOCK_FREQ_RATIO  = 4,
-    parameter WIDTH             = 8,
-    parameter DEPTH             = 64
+    parameter clk_spec_t FASTER_CLK = WR, // (WR,RD)
+    parameter CLOCK_FREQ_RATIO      = 4,
+    parameter WIDTH                 = 8,
+    parameter DEPTH                 = 64
 )(
     input  logic wr_clk, rd_clk,
     input  logic wr_en,  rd_en,
@@ -22,8 +24,8 @@ module burst_fifo_nx #(
     logic [WIDTH-1:0] fifo_mem [0:DEPTH-1];
     
     // Cross clock domains with pointers gray encoded
-    logic [$clog2(DEPTH):0] wr_ptr_bin, rd_ptr_bin;
-    logic [$clog2(DEPTH):0] rd_ptr_gray, wr_ptr_gray;
+    logic [$clog2(DEPTH):0] wr_ptr_bin,   rd_ptr_bin;
+    logic [$clog2(DEPTH):0] rd_ptr_gray,  wr_ptr_gray;
     logic [$clog2(DEPTH):0] rd_ptr_wrclk, rd_ptr_wrclk1, rd_ptr_wrclk2;
     logic [$clog2(DEPTH):0] wr_ptr_rdclk, wr_ptr_rdclk1, wr_ptr_rdclk2;
     
@@ -58,42 +60,42 @@ module burst_fifo_nx #(
     
     always_ff @(wr_clk) begin
         fifo_full        <=  wr_ptr_bin    == {~rd_ptr_wrclk[$clog2(DEPTH)], rd_ptr_wrclk[$clog2(DEPTH)-1:0]};
-        fifo_almost_full <= (wr_ptr_bin+1) == {~rd_ptr_wrclk[$clog2(DEPTH)], rd_ptr_wrclk[$clog2(DEPTH)-1:0]};;
+        fifo_almost_full <= (wr_ptr_bin+1) == {~rd_ptr_wrclk[$clog2(DEPTH)], rd_ptr_wrclk[$clog2(DEPTH)-1:0]};
     end
     
     generate
         case(FASTER_CLK)
-            "wr": begin
+            WR: begin
                 always_ff @(posedge wr_clk) begin
                     if (wr_en && ~fifo_full) begin
-                        wr_ptr_bin++;
+                        wr_ptr_bin <= wr_ptr_bin + 1;
                         wr_ptr_gray <= bin2gray(wr_ptr_bin+1);
-                        fifo_mem[wr_ptr_bin] <= din;
+                        fifo_mem[wr_ptr_bin[$clog2(DEPTH)-1:0]] <= din;
                     end
                 end
                 
                 always_ff @(posedge rd_clk) begin
                     if (rd_en && ~fifo_empty) begin
-                        rd_ptr_bin++;
+                        rd_ptr_bin <= rd_ptr_bin + 1;;
                         rd_ptr_gray <= bin2gray(rd_ptr_bin+1);
-                        dout <= fifo_mem[rd_ptr_bin];
+                        dout <= fifo_mem[rd_ptr_bin[$clog2(DEPTH)-1:0]];
                     end
                 end
             end
-            "rd": begin
+            RD: begin
                 always_ff @(posedge wr_clk) begin
                     if (wr_en && ~fifo_full) begin
-                        wr_ptr_bin++;
+                        wr_ptr_bin <= wr_ptr_bin + 1;
                         wr_ptr_gray <= bin2gray(wr_ptr_bin+1);
-                        fifo_mem[wr_ptr_bin] <= din;
+                        fifo_mem[wr_ptr_bin[$clog2(DEPTH)-1:0]] <= din;
                     end
                 end
                 
                 always_ff @(posedge rd_clk) begin
                     if (rd_en && ~fifo_empty) begin
-                        rd_ptr_bin++;
+                        rd_ptr_bin <= rd_ptr_bin + 1;
                         rd_ptr_gray <= bin2gray(rd_ptr_bin+1);
-                        dout <= fifo_mem[rd_ptr_bin];
+                        dout <= fifo_mem[rd_ptr_bin[$clog2(DEPTH)-1:0]];
                     end
                 end
             end
@@ -101,17 +103,17 @@ module burst_fifo_nx #(
             default: begin
                 always_ff @(posedge wr_clk) begin
                     if (wr_en && ~fifo_full) begin
-                        wr_ptr_bin++;
+                        wr_ptr_bin <= wr_ptr_bin + 1;
                         wr_ptr_gray <= bin2gray(wr_ptr_bin+1);
-                        fifo_mem[wr_ptr_bin] <= din;
+                        fifo_mem[wr_ptr_bin[$clog2(DEPTH)-1:0]] <= din;
                     end
                 end
                 
                 always_ff @(posedge rd_clk) begin
                     if (rd_en && ~fifo_empty) begin
-                        rd_ptr_bin++;
+                        rd_ptr_bin <= rd_ptr_bin + 1;
                         rd_ptr_gray <= bin2gray(rd_ptr_bin+1);
-                        dout <= fifo_mem[rd_ptr_bin];
+                        dout <= fifo_mem[rd_ptr_bin[$clog2(DEPTH)-1:0]];
                     end
                 end
             end
